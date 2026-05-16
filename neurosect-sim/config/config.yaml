@@ -1,0 +1,43 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# NEUROSECT — Central Config
+# WHY: Keep all hyperparameters in one place so you can tune without
+#      digging through code. Change here, effects propagate everywhere.
+# LEARN: This is loaded in Python with: import yaml; cfg = yaml.safe_load(open('config/config.yaml'))
+# ─────────────────────────────────────────────────────────────────────────────
+
+data:
+  nsd_path: "data/nsd"                  # Where you store the NSD fMRI dataset
+  eeg_path: "data/things_eeg"           # Where you store THINGS-EEG dataset
+  subjects: ["subj01", "subj02", "subj03"]  # Alice, Ben, Cal
+  alice: "subj01"                        # Primary hypothesis subject
+  n_voxels: 15724                        # NSD ROI voxel count (visual cortex)
+
+model:
+  clip_model: "openai/clip-vit-large-patch14"  # The CLIP model we use for embeddings
+  embed_dim: 768                          # CLIP embedding dimension
+  hidden_dim: 1024                        # Hidden layer size in our MLPs
+  dropout: 0.5                            # MC Dropout rate (uncertainty estimation)
+  mc_samples: 20                          # Forward passes for uncertainty
+
+training:
+  batch_size: 32
+  lr: 1.0e-4
+  epochs: 50
+  warmup_steps: 100
+  device: "cuda"                          # Change to "mps" for Mac M-series, "cpu" fallback
+
+consensus:
+  minority_report_threshold: 0.3         # Cosine distance to flag minority report
+  n_event_classes: 80                     # COCO has 80 object categories — our "event library"
+  temperature: 0.07                       # Softmax temperature for probability sharpness
+
+synthesizer:
+  sd_model: "stabilityai/stable-diffusion-2-1"
+  guidance_scale: 7.5
+  steps: 50
+  seed: 42
+
+paths:
+  checkpoints: "checkpoints/"
+  outputs: "outputs/"
+  logs: "logs/"
