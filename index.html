@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neurosect — A Speculative Multimodal Medical Imaging System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --white: #ffffff;
+    --cream: #faf8f5;
+    --paper: #f4f0fb;
+    --border: #e8e2f4;
+    --border-mid: #d0c8e8;
+    --lavender: #8b6fc8;
+    --lavender-pale: rgba(139,111,200,0.08);
+    --teal: #00b8b0;
+    --teal-pale: rgba(0,184,176,0.08);
+    --pink: #e0305a;
+    --pink-pale: rgba(224,48,90,0.07);
+    --blue: #3858c8;
+    --blue-pale: rgba(56,88,200,0.07);
+    --amber: #e89830;
+    --body: #42405a;
+    --muted: #8880a8;
+    --heading: #18122e;
+    --heading-soft: #2a2040;
+    --sky-bg: #eef4f8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--cream); color:var(--body); font-family:'Georgia','Times New Roman',serif; line-height:1.7; }
+  .cable { height:3px; background:linear-gradient(90deg,var(--pink) 0%,var(--pink) 34%,var(--blue) 34%,var(--blue) 67%,var(--teal) 67%,var(--teal) 100%); opacity:.55; }
+
+  /* NAV */
+  nav { background:rgba(250,248,245,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:0 52px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .nav-brand { display:flex; align-items:center; gap:12px; }
+  .precog-dots { display:flex; gap:5px; }
+  .pd { width:7px; height:7px; border-radius:50%; animation:breath 3s ease-in-out infinite; }
+  .pa { background:var(--pink); }
+  .pb { background:var(--blue); animation-delay:.7s; }
+  .pc { background:var(--teal); animation-delay:1.4s; }
+  @keyframes breath { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .nav-name { font-size:15px; font-style:italic; color:var(--heading); letter-spacing:.04em; }
+  .nav-links { display:flex; gap:24px; }
+  .nav-links a { font-family:system-ui,sans-serif; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color .2s; }
+  .nav-links a:hover { color:var(--lavender); }
+  .nav-gh { font-family:system-ui,sans-serif; font-size:11px; padding:6px 16px; background:var(--lavender); color:#fff; border-radius:3px; text-decoration:none; letter-spacing:.04em; }
+
+  /* HERO */
+  .hero { background:linear-gradient(140deg,#eaecf8 0%,#ece6f8 35%,#f2e6f4 65%,#e6f4f0 100%); padding:72px 52px 0; overflow:hidden; }
+  .hero-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
+  .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(139,111,200,.1); border:1px solid rgba(139,111,200,.25); border-radius:2px; padding:5px 12px; margin-bottom:22px; font-family:system-ui,sans-serif; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--lavender); }
+  .hero h1 { font-size:clamp(44px,6vw,82px); font-weight:normal; font-style:italic; color:var(--heading); line-height:1; letter-spacing:-.02em; margin-bottom:10px; }
+  .hero h1 b { font-weight:normal; color:var(--lavender); font-style:normal; }
+  .hero-sub { font-family:system-ui,sans-serif; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
+  .hero-desc { font-size:16px; color:var(--body); line-height:1.8; margin-bottom:24px; }
+  .hero-authors { font-family:system-ui,sans-serif; font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:14px; line-height:1.8; }
+  .hero-authors span { color:var(--lavender); }
+
+  /* HERO ART */
+  .hero-art { background:linear-gradient(135deg,rgba(139,111,200,.05) 0%,rgba(0,184,176,.05) 50%,rgba(224,48,90,.04) 100%); border:2px dashed var(--border-mid); border-radius:6px; min-height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px; position:relative; overflow:hidden; }
+  .hero-art::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--pink),var(--blue),var(--teal)); opacity:.4; }
+  .ha-eyebrow { font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .ha-title { font-size:18px; font-style:italic; color:var(--heading-soft); margin-bottom:8px; }
+  .ha-sub { font-family:system-ui,sans-serif; font-size:12px; color:var(--muted); line-height:1.65; max-width:260px; }
+  .ha-note { position:absolute; bottom:14px; right:16px; font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--lavender); }
+
+  /* HERO METRICS */
+  .hero-metrics { background:#fff; border-top:1px solid var(--border); padding:20px 52px; }
+  .hm-inner { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+  .hm { text-align:center; }
+  .hm-n { font-size:26px; font-style:italic; color:var(--heading); letter-spacing:-.02em; }
+  .hm-l { font-family:system-ui,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); margin-top:3px; }
+  .hm-vr { width:1px; background:var(--border); align-self:stretch; }
+
+  /* SECTIONS */
+  section { padding:72px 52px; }
+  section .inner { max-width:1100px; margin:0 auto; }
+  .s-alt { background:var(--paper); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .s-sky { background:var(--sky-bg); border-top:1px solid #d8eaf2; border-bottom:1px solid #d8eaf2; }
+
+  .ey { font-family:system-ui,sans-serif; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--lavender); margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+  .ey::before { content:''; width:14px; height:1px; background:var(--lavender); }
+  .ey-t { color:var(--teal); }
+  .ey-t::before { background:var(--teal); }
+  .ey-p { color:var(--pink); }
+  .ey-p::before { background:var(--pink); }
+
+  h2 { font-size:clamp(26px,3vw,42px); font-weight:normal; font-style:italic; color:var(--heading); letter-spacing:-.02em; margin-bottom:14px; line-height:1.1; }
+  h3 { font-size:16px; font-weight:normal; font-style:italic; color:var(--heading-soft); margin-bottom:8px; }
+  p.lead { font-size:16px; color:var(--body); line-height:1.85; max-width:640px; }
+  hr.rule { border:none; border-top:1px solid var(--border); }
+
+  /* PRECOG CARDS */
+  .precog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:44px; }
+  .pc-card { border-radius:5px; padding:26px; position:relative; overflow:hidden; }
+  .pca { background:#fdf0f4; border:1px solid rgba(224,48,90,.18); }
+  .pcb { background:#f0f2fd; border:1px solid rgba(56,88,200,.18); }
+  .pcc { background:#eefbfa; border:1px solid rgba(0,184,176,.2); }
+  .pc-name { font-size:34px; font-style:italic; letter-spacing:-.02em; line-height:1; margin-bottom:5px; }
+  .pna { color:var(--pink); }
+  .pnb { color:var(--blue); }
+  .pnc { color:var(--teal); }
+  .pc-role { font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.16em; text-transform:uppercase; margin-bottom:12px; }
+  .pra { color:var(--pink); }
+  .prb { color:var(--blue); }
+  .prc { color:var(--teal); }
+  .pc-card p { font-size:13px; color:var(--body); line-height:1.7; }
+  .pc-bar { position:absolute; bottom:0; left:0; right:0; height:3px; }
+  .bra { background:var(--pink); }
+  .brb { background:var(--blue); }
+  .brc { background:var(--teal); }
+
+  /* MOD GRID */
+  .mod-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:40px; }
+  .mod-card { background:#fff; border:1px solid var(--border); border-radius:5px; padding:22px 24px; }
+  .mod-head { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+  .mod-name { font-size:22px; font-style:italic; color:var(--heading); }
+  .mod-full { font-family:system-ui,sans-serif; font-size:10px; color:var(--muted); }
+  .pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .pill { font-family:system-ui,sans-serif; font-size:9px; padding:2px 8px; border-radius:20px; }
+  .pl { background:var(--lavender-pale); border:1px solid rgba(139,111,200,.2); color:var(--lavender); }
+  .pt { background:var(--teal-pale); border:1px solid rgba(0,184,176,.2); color:var(--teal); }
+  .pp { background:var(--pink-pale); border:1px solid rgba(224,48,90,.15); color:var(--pink); }
+  .pb2 { background:var(--blue-pale); border:1px solid rgba(56,88,200,.15); color:var(--blue); }
+  .mod-card p { font-size:13px; color:var(--body); line-height:1.7; }
+
+  /* TEMPORAL VIZ */
+  .tv { margin-top:36px; background:#fff; border:1px solid var(--border); border-radius:5px; padding:28px; }
+  .tv-label { font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
+  .tv-row { margin-bottom:16px; }
+  .tv-head { display:flex; justify-content:space-between; margin-bottom:5px; }
+  .tv-n { font-size:13px; font-style:italic; color:var(--heading-soft); }
+  .tv-r { font-family:system-ui,sans-serif; font-size:10px; color:var(--muted); }
+  .tv-track { height:18px; background:var(--paper); border-radius:2px; overflow:hidden; }
+  .tv-fill { height:100%; border-radius:2px; display:flex; align-items:center; padding-left:8px; }
+  .tv-fill span { font-family:system-ui,sans-serif; font-size:9px; color:#fff; letter-spacing:.05em; white-space:nowrap; }
+
+  /* PIPELINE */
+  .pipe-list { margin-top:36px; display:flex; flex-direction:column; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:5px; overflow:hidden; }
+  .pipe-stage { background:#fff; padding:20px 26px; display:grid; grid-template-columns:44px 160px 1fr; gap:18px; align-items:start; }
+  .ps-n { font-size:28px; font-style:italic; color:var(--border-mid); line-height:1; }
+  .ps-lbl { font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:3px; }
+  .ps-t { font-size:14px; font-style:italic; color:var(--heading-soft); }
+  .ps-body p { font-size:13px; color:var(--body); line-height:1.7; }
+  .ps-tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .ps-tag { font-family:system-ui,sans-serif; font-size:9px; padding:2px 7px; background:var(--paper); border:1px solid var(--border); border-radius:2px; color:var(--muted); }
+
+  /* FORMULA */
+  .formula-wrap { background:#fff; border:1px solid var(--border); border-radius:5px; padding:30px 34px; margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start; }
+  .f-label { font-family:system-ui,sans-serif; font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+  .f-math { font-size:16px; font-style:italic; color:var(--heading-soft); line-height:1.9; }
+  .f-note { font-size:12px; font-style:italic; color:var(--muted); margin-top:10px; line-height:1.65; }
+  .f-key-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); }
+  .f-key-row:last-child { border-bottom:none; }
+  .fks { font-size:13px; font-style:italic; color:var(--lavender); }
+  .fkd { font-size:12px; color:var(--body); }
+
+  /* DIAGRAM */
+  .diagram-wrap { background:#fff; border:1px solid var(--border); border-radius:5px; padding:36px; margin-top:36px; overflow-x:auto; }
+
+  /* SIG CARDS */
+  .sig-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:36px; }
+  .sig-card { background:#fff; border:1px solid var(--border); border-radius:5px; padding:20px 22px; }
+  .sig-v { font-size:28px; font-style:italic; color:var(--heading); letter-spacing:-.02em; margin-bottom:3px; }
+  .sig-u { font-family:system-ui,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:8px; }
+  .sig-card p { font-size:12px; color:var(--body); line-height:1.65; }
+
+  /* APP GRID */
+  .app-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:36px; }
+  .app-card { border-radius:5px; padding:22px 24px; }
+  .al { background:var(--lavender-pale); border:1px solid rgba(139,111,200,.18); }
+  .at { background:var(--teal-pale); border:1px solid rgba(0,184,176,.18); }
+  .ap { background:var(--pink-pale); border:1px solid rgba(224,48,90,.12); }
+  .ab { background:var(--blue-pale); border:1px solid rgba(56,88,200,.14); }
+  .app-card p { font-size:13px; line-height:1.7; margin-top:7px; }
+
+  /* FEAS */
+  .feas-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:36px; }
+  .fy { background:#f2fcf6; border:1px solid rgba(0,160,80,.18); border-radius:5px; padding:24px; }
+  .fn { background:#fdf2f5; border:1px solid rgba(224,48,90,.14); border-radius:5px; padding:24px; }
+  .feas-h { font-family:system-ui,sans-serif; font-size:10px; letter-spacing:.18em; text-transform:uppercase; font-weight:700; margin-bottom:14px; }
+  .fhy { color:#16a34a; }
+  .fhn { color:var(--pink); }
+  .fi { display:flex; gap:10px; padding:8px 0; border-bottom:1px solid rgba(0,0,0,.05); font-size:13px; color:var(--body); line-height:1.6; }
+  .fi:last-child { border-bottom:none; }
+  .fid { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:6px; }
+  .fdy { background:#16a34a; }
+  .fdn { background:var(--pink); }
+
+  /* FOOTER */
+  footer { border-top:1px solid var(--border); padding:36px 52px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; }
+  footer p { font-family:system-ui,sans-serif; font-size:11px; color:var(--muted); }
+  .ft { font-size:16px; font-style:italic; color:var(--heading-soft); margin-bottom:4px; }
+
+  @media(max-width:768px){
+    nav{padding:0 24px;} .nav-links{display:none;}
+    section{padding:56px 24px;} .hero{padding:70px 24px 0;} .hero-metrics{padding:20px 24px;}
+    .hero-inner,.precog-grid,.mod-grid,.sig-grid,.app-grid,.feas-grid,.formula-wrap{grid-template-columns:1fr;}
+    .pipe-stage{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cable"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="precog-dots"><div class="pd pa"></div><div class="pd pb"></div><div class="pd pc"></div></div>
+    <span class="nav-name">Neurosect</span>
+  </div>
+  <div class="nav-links">
+    <a href="#science">Science</a><a href="#precogs">Precogs</a>
+    <a href="#stack">Stack</a><a href="#pipeline">Pipeline</a>
+    <a href="#consensus">Consensus</a><a href="#applications">Applications</a>
+  </div>
+  <a href="https://github.com" class="nav-gh">GitHub</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">ECE 187 Biomedical Imaging & Sensing · UC San Diego</div>
+      <h1><b>Neuro</b>sect</h1>
+      <div class="hero-sub">Multimodal Medical Imaging · Inspired by Minority Report</div>
+      <p class="hero-desc">A speculative precognitive system powered by multimodal medical imaging, three specialised AI decoders, and three quantum-thinking brains — grounded in real signal processing and systems engineering.</p>
+      <div class="hero-authors">
+        Amelia Arabe &nbsp;·&nbsp; Irene Ronda Gómez &nbsp;·&nbsp; Alan Aquino<br>
+        <span>Electrical and Computer Engineering Department · University of California, San Diego</span>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="ha-eyebrow">System Illustration</div>
+      <div class="ha-title">CAD Drawing / Line Art</div>
+      <p class="ha-sub">Replace with your CAD design or refined line drawing — bio-support tank, neuro-interface helmets, signal routing cables (pink · blue · teal)</p>
+      <div class="ha-note">Add your artwork here</div>
+    </div>
+  </div>
+</div>
+
+<div class="hero-metrics">
+  <div class="hm-inner">
+    <div class="hm"><div class="hm-n">4</div><div class="hm-l">Imaging Modalities</div></div>
+    <div class="hm-vr"></div>
+    <div class="hm"><div class="hm-n">3</div><div class="hm-l">Precog Subjects</div></div>
+    <div class="hm-vr"></div>
+    <div class="hm"><div class="hm-n">5</div><div class="hm-l">Pipeline Stages</div></div>
+    <div class="hm-vr"></div>
+    <div class="hm"><div class="hm-n">1000×</div><div class="hm-l">Temporal Resolution Gap</div></div>
+    <div class="hm-vr"></div>
+    <div class="hm"><div class="hm-n">400 MB/s</div><div class="hm-l">Peak Throughput</div></div>
+    <div class="hm-vr"></div>
+    <div class="hm"><div class="hm-n">P(E|A,B,C)</div><div class="hm-l">Bayesian Consensus</div></div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<!-- SCIENCE -->
+<section id="science">
+<div class="inner">
+  <div class="ey">The Science</div>
+  <h2>Minority Report, grounded in engineering</h2>
+  <p class="lead">The technology depicted in the 2002 film can be engineered using contemporary classical imaging techniques. fMRI, EEG, PPG, and MEG work in unison to create two clear reconstructions of brain activity — a delayed stream of all neuron movement on a 3D brain map, and video feedback of the subject's thoughts.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:36px;">
+    <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:26px;">
+      <div style="font-family:system-ui,sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--lavender);margin-bottom:14px;">What the Physics Supports</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--lavender);margin-top:7px;flex-shrink:0;"></div>
+          <div><strong style="font-size:13px;color:var(--heading-soft);font-weight:normal;font-style:italic;">Neural Encoding</strong><p style="font-size:13px;color:var(--body);margin-top:3px;">Specific thoughts activate specific, repeatable brain patterns — stable enough across time to serve as individual neural fingerprints for decoder training.</p></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--teal);margin-top:7px;flex-shrink:0;"></div>
+          <div><strong style="font-size:13px;color:var(--heading-soft);font-weight:normal;font-style:italic;">Decoding</strong><p style="font-size:13px;color:var(--body);margin-top:3px;">An AI trained on enough examples can learn to map activation patterns to semantic content. Demonstrated by UT Austin's non-invasive fMRI semantic decoder (Tang et al., Nature Neuroscience 2023).</p></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:10px 0;">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--pink);margin-top:7px;flex-shrink:0;"></div>
+          <div><strong style="font-size:13px;color:var(--heading-soft);font-weight:normal;font-style:italic;">Reconstruction</strong><p style="font-size:13px;color:var(--body);margin-top:3px;">Latent diffusion models can synthesise visual scenes from encoded neural representations (Takagi & Nishimoto, 2023; Ozcelik & VanRullen, Scientific Reports 2023).</p></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:5px;padding:26px;">
+      <div style="font-family:system-ui,sans-serif;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">The Unsolved Engineering Problems</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="background:var(--pink-pale);border:1px solid rgba(224,48,90,.12);border-radius:3px;padding:11px;">
+          <div style="font-size:13px;font-style:italic;color:var(--pink);margin-bottom:3px;">Temporal Mismatch</div>
+          <p style="font-size:13px;color:var(--body);">EEG resolves at milliseconds; fMRI at seconds. Real-time fusion across a three-order-of-magnitude gap is an unsolved systems engineering problem.</p>
+        </div>
+        <div style="background:var(--lavender-pale);border:1px solid rgba(139,111,200,.14);border-radius:3px;padding:11px;">
+          <div style="font-size:13px;font-style:italic;color:var(--lavender);margin-bottom:3px;">Signal-to-Noise Ratio</div>
+          <p style="font-size:13px;color:var(--body);">Brain magnetic fields at 10⁻¹³ T require SQUID sensors and extreme magnetic shielding to detect in a hospital EMI environment.</p>
+        </div>
+        <div style="background:var(--teal-pale);border:1px solid rgba(0,184,176,.14);border-radius:3px;padding:11px;">
+          <div style="font-size:13px;font-style:italic;color:var(--teal);margin-bottom:3px;">Imagination vs. Perception</div>
+          <p style="font-size:13px;color:var(--body);">Decoding predictive neural states requires training data for future-oriented brain activity — not present-time perception. No such dataset currently exists.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- PRECOGS -->
+<section id="precogs" class="s-alt">
+<div class="inner">
+  <div class="ey ey-p">The Three Subjects</div>
+  <h2>Alice, Ben, and Cal</h2>
+  <p class="lead">Three genetically engineered subjects — developed from donor gametes via in vitro fertilisation and raised in sealed ectogenesis chambers with continuous neural modification. Their neurons are engineered to respond to transcranial focused ultrasound (tFUS), driving synchronised theta-like states that enable detection of unresolved probability patterns.</p>
+
+  <div class="precog-grid">
+    <div class="pc-card pca">
+      <div class="pc-name pna">Alice</div>
+      <div class="pc-role pra">Primary Hypothesis Channel</div>
+      <p>Produces visions in probabilistic order — her stream provides the primary semantic narrative and ordered ranking of candidate futures. Alice's larger hippocampal volume gives her fMRI stream the most reliable spatial anchor for Signal Separator isolation. Her neural state vector |ψ_A⟩ serves as the primary reference for the quantum probability calculator.</p>
+      <div class="pc-bar bra"></div>
+    </div>
+    <div class="pc-card pcb">
+      <div class="pc-name pnb">Ben</div>
+      <div class="pc-role prb">Independent Confirmatory Channel</div>
+      <p>Functions as an independent probabilistic corroborator. Ben's decoded output runs alongside Alice's and is held in reserve for the Consensus Engine. When his stream converges with Alice's, P(E|A,B,C) climbs. When he diverges, the system flags a minority report — a low-probability alternative future ranked separately from the consensus outcome.</p>
+      <div class="pc-bar brb"></div>
+    </div>
+    <div class="pc-card pcc">
+      <div class="pc-name pnc">Cal</div>
+      <div class="pc-role prc">Independent Confirmatory Channel</div>
+      <p>A second independent confirmatory stream whose randomised output, cross-referenced against Alice and Ben, determines final consensus ranking. When all three streams converge, confidence approaches certainty. The PPG signal from each precog acts as an arousal cross-check — unusual cardiac changes flag neural frames for exclusion from the predictive output.</p>
+      <div class="pc-bar brc"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:5px;padding:22px 26px;">
+    <div style="font-family:system-ui,sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Minority Report Flag</div>
+    <p style="font-size:14px;color:var(--body);line-height:1.8;font-style:italic;">When Ben or Cal diverges from Alice entirely, the system flags a minority report — a low-probability alternative future preserved in the output and ranked separately from the consensus. The Consensus Engine produces a probability distribution, not a directive. Intervention remains a human decision made with full knowledge of the evidence.</p>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- STACK -->
+<section id="stack">
+<div class="inner">
+  <div class="ey ey-t">The Multi-Modal Stack</div>
+  <h2>Four modalities, one coherent signal</h2>
+  <p class="lead">Each precog's head is housed inside a sealed neuro-interface helmet containing a coupling fluid — degassed, proton-poor, electrically insulating, and acoustically matched — engineered to support tFUS propagation without disturbing fMRI, EEG, or PPG signal acquisition.</p>
+
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-name">fMRI</span><span class="mod-full">Functional Magnetic Resonance Imaging</span></div>
+      <div class="pills"><span class="pill pl">1–2 sec temporal</span><span class="pill pl">~1–2 mm spatial</span><span class="pill pl">200–400 MB/s</span></div>
+      <p>Maps neuron activation through the BOLD (Blood Oxygen Level Dependent) haemodynamic response — a millimetre-precise proxy for neural activity. Each helmet contains its own head-specific receiver coil. A single high-field magnet images all three precogs simultaneously while the proton-poor coupling fluid contributes no competing MRI signal. The shared fMRI field provides the spatial foundation that makes per-subject Signal Separation possible.</p>
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-name">EEG</span><span class="mod-full">Electroencephalography</span></div>
+      <div class="pills"><span class="pill pt">~1ms temporal</span><span class="pill pt">256 channels</span><span class="pill pt">6.1 MB/s</span></div>
+      <p>Captures electrical summation of neuron firing at millisecond resolution — detecting neural dynamics as they unfold rather than their vascular aftereffect. Electrodes placed directly on the scalp inside each helmet. The coupling fluid does not interfere. Targets delta (0.5–4 Hz), theta (4–8 Hz), alpha (8–12 Hz), beta (12–30 Hz), and gamma (30–100 Hz) frequency-band signatures for temporal pattern extraction.</p>
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-name">MEG</span><span class="mod-full">Magnetoencephalography</span></div>
+      <div class="pills"><span class="pill pp">~1ms temporal</span><span class="pill pp">306 channels</span><span class="pill pp">9.8 MB/s</span></div>
+      <p>Reads magnetic fields produced by neural activation currents using SQUID sensors. Magnetic fields pass through the skull without distortion — giving MEG superior spatial resolution compared to EEG while maintaining the same millisecond temporal precision. NeuroSect uses EEG and MEG together because they capture the same neural event from different physical angles. While fMRI waits on the haemodynamic response, EEG and MEG have already caught the moment a candidate future emerges.</p>
+    </div>
+    <div class="mod-card">
+      <div class="mod-head"><span class="mod-name">PPG</span><span class="mod-full">Photoplethysmography</span></div>
+      <div class="pills"><span class="pill pb2">~8ms temporal</span><span class="pill pb2">125 Hz</span><span class="pill pb2">Arousal proxy</span></div>
+      <p>Measures heart rate, heart rate variability, and pulse waveform morphology — reflecting autonomic state, cognitive load, and emotional arousal. In NeuroSect, PPG acts as an independent cross-check: unusual cardiac changes flag those neural frames for the AI pipeline to discard, keeping only clean data tied to genuine predictive episodes. PPG also removes heartbeat noise from the fMRI BOLD signal.</p>
+    </div>
+  </div>
+
+  <div class="tv">
+    <div class="tv-label">Temporal Resolution — The Core Engineering Challenge</div>
+    <div class="tv-row">
+      <div class="tv-head"><span class="tv-n">EEG / MEG</span><span class="tv-r">~1ms · millisecond scale</span></div>
+      <div class="tv-track" style="background:#eefbfa;"><div class="tv-fill" style="width:100%;background:var(--teal);"><span>Captures neural events as they happen</span></div></div>
+    </div>
+    <div class="tv-row">
+      <div class="tv-head"><span class="tv-n">PPG</span><span class="tv-r">~8ms · cardiovascular cycle</span></div>
+      <div class="tv-track" style="background:#f0f2fd;"><div class="tv-fill" style="width:66%;background:var(--blue);"><span>Autonomic state · arousal context</span></div></div>
+    </div>
+    <div class="tv-row" style="margin-bottom:0;">
+      <div class="tv-head"><span class="tv-n">fMRI (BOLD)</span><span class="tv-r">1–2 seconds · haemodynamic lag</span></div>
+      <div class="tv-track" style="background:#fdf0f4;"><div class="tv-fill" style="width:7%;background:var(--pink);min-width:56px;"><span>Peaks 4–6s after neural event</span></div></div>
+    </div>
+    <p style="margin-top:12px;font-size:12px;color:var(--muted);font-style:italic;">Fast-moving predictive activity could slip between fMRI snapshots entirely. EEG and MEG close that gap — catching the moment a candidate future emerges before the BOLD response begins.</p>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- PIPELINE -->
+<section id="pipeline" class="s-sky">
+<div class="inner">
+  <div class="ey">AI Decoding Pipeline</div>
+  <h2>Five stages from raw signal to ranked future</h2>
+  <p class="lead">The pipeline operates in five sequential stages. Each maintains human-in-the-loop decision making and closes the gap between raw neural data and human comprehension. The final output is a ranked probability distribution and a video reconstruction — never a directive.</p>
+
+  <div class="pipe-list">
+    <div class="pipe-stage">
+      <div class="ps-n">01</div>
+      <div><div class="ps-lbl">Foundation</div><div class="ps-t">Subject-Specific Calibration</div></div>
+      <div class="ps-body">
+        <p>NeuroSect benefits from something no current decoder has — a lifetime of calibration data. Trained continuously from birth on spoken words, imagined stories, and everything in between. By operational maturity, individual decoders map each precog's neural signatures with precision far exceeding what a single session could achieve. Current semantic decoders require approximately 16 hours of individual training data per subject (Tang et al., 2023). A near-future medical protocol using spoken word decoding and passive resting state fingerprinting could compress this to under 15 minutes.</p>
+        <div class="ps-tags"><span class="ps-tag">Per-subject neural fingerprinting</span><span class="ps-tag">Semantic decoder training</span><span class="ps-tag">Lifetime calibration</span></div>
+      </div>
+    </div>
+    <div class="pipe-stage">
+      <div class="ps-n">02</div>
+      <div><div class="ps-lbl">Stage 1</div><div class="ps-t">Signal Separator</div></div>
+      <div class="ps-body">
+        <p>Three brains, four imaging modalities, one shared scanner. The Signal Separator identifies, sorts, and delivers every incoming stream before a single candidate future can be decoded. The fMRI BOLD signal builds a continuous 3D spatial map of the shared environment — establishing each brain's precise anatomical location. A CNN pre-trained on each subject's calibration data assigns voxel-level BOLD activity to the correct precog with increasing accuracy. Alice's larger hippocampal volume provides the most reliable spatial anchor. Output: three separate, fully organised, time-aligned data packages.</p>
+        <div class="ps-tags"><span class="ps-tag">CNN spatial fingerprinting</span><span class="ps-tag">Multi-subject fMRI isolation</span><span class="ps-tag">Cross-modal time alignment</span></div>
+      </div>
+    </div>
+    <div class="pipe-stage">
+      <div class="ps-n">03</div>
+      <div><div class="ps-lbl">Stage 2</div><div class="ps-t">3D Pattern Decoder</div></div>
+      <div class="ps-body">
+        <p>Where raw neural data becomes legible. Two simultaneous outputs per precog: a live 3D brain map (fMRI BOLD via General Linear Model across all voxels in real time) and a continuous text stream describing the semantic content of each candidate future. A transformer-based language model trained on each precog's brain during calibration maps neural activation patterns to natural language — the same architecture UT Austin demonstrated for non-invasive continuous thought reconstruction. Alice's text stream is the primary ordered narrative. Ben's and Cal's streams are parallel probabilistic corroborators.</p>
+        <div class="ps-tags"><span class="ps-tag">fMRI General Linear Model</span><span class="ps-tag">Transformer semantic decoder</span><span class="ps-tag">Live 3D brain map</span><span class="ps-tag">EEG/MEG temporal bridging</span></div>
+      </div>
+    </div>
+    <div class="pipe-stage">
+      <div class="ps-n">04</div>
+      <div><div class="ps-lbl">Stage 3</div><div class="ps-t">Image Synthesizer</div></div>
+      <div class="ps-body">
+        <p>The final translation layer between neural data and human comprehension. Built on Stable Diffusion — Takagi and Nishimoto (2023) demonstrated that fMRI BOLD contains sufficient information to condition a latent diffusion model into reconstructing accurate visual scenes, decoding semantic content, spatial layout, and depth simultaneously from neural activation. Alice is the primary source. Spatial features corroborated across all three streams are rendered at full probability weight; Alice-only features are flagged as unconfirmed. Scientists review the ranked text feed and make the call before any video is generated — preserving human judgment at every step.</p>
+        <div class="ps-tags"><span class="ps-tag">Stable Diffusion</span><span class="ps-tag">Latent diffusion model</span><span class="ps-tag">Human-in-the-loop</span><span class="ps-tag">Multi-subject spatial corroboration</span></div>
+      </div>
+    </div>
+    <div class="pipe-stage">
+      <div class="ps-n">05</div>
+      <div><div class="ps-lbl">Stage 4</div><div class="ps-t">Consensus Engine</div></div>
+      <div class="ps-body">
+        <p>Every candidate future passes through here before a frame of video is rendered. Three layers: neural feature extraction translates decoded outputs into comparable data structures; the quantum probability calculator maintains a library of all candidate futures and assigns probability amplitudes using Alice's neural state vector as the primary reference; the Bayesian consensus engine cross-references amplitudes against agreement across all three streams. Scientists receive the highest-probability candidate for video reconstruction plus a ranked text feed of the top fifteen alternative futures — similar outcomes with small detail differences, and futures that diverge entirely — preserving full probability landscape visibility.</p>
+        <div class="ps-tags"><span class="ps-tag">Quantum probability amplitudes</span><span class="ps-tag">Bayesian P(E|A,B,C)</span><span class="ps-tag">Minority report flagging</span><span class="ps-tag">Top-15 ranked output</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    participant BIO as Biological Sensor
+    participant ACQ as ADC Acquisition
+    participant SEP as Signal Separator
+    participant DEC as Pattern Decoder
+    participant CON as Consensus Engine
+    participant IMG as Image Synthesizer
+
+    BIO->>ACQ: fMRI BOLD · EEG · MEG · PPG
+    Note over ACQ: Hardware timestamping<br/>per-modality ring buffers
+    ACQ->>SEP: Four time-aligned streams
+    Note over SEP: CNN spatial fingerprinting<br/>Alice · Ben · Cal isolation
+    SEP->>DEC: Three clean data packages
+    Note over DEC: Live 3D brain map (GLM)<br/>Semantic text stream (Transformer)
+    DEC->>CON: Three latent state vectors
+    Note over CON: Quantum P(Ei) = |phi_i psi|^2<br/>Bayesian P(E|A,B,C)<br/>Minority report flagging
+    CON->>IMG: Highest-probability candidate
+    Note over IMG: Stable Diffusion<br/>Human review then render
+    IMG-->>BIO: Ranked video output
+    </div>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- CONSENSUS -->
+<section id="consensus">
+<div class="inner">
+  <div class="ey ey-p">The Mathematics</div>
+  <h2>Bayesian consensus and quantum probability</h2>
+  <p class="lead">The Consensus Engine operates in the same mathematical space as the probability amplitudes it is calculating — making it fast enough to keep pace with the continuous neural streams feeding in from all three precogs simultaneously.</p>
+
+  <div class="formula-wrap">
+    <div>
+      <div class="f-label">Bayesian Consensus Formula</div>
+      <div class="f-math">P(E | A, B, C) =<br>P(A|E) · P(B|E) · P(C|E) · P(E)<br>──────────────────────────<br>P(A, B, C)</div>
+      <div class="f-note">When all three streams converge on the same event, P(E|A,B,C) climbs toward certainty. When only Alice flags an event, it is recorded but ranked lower. When Ben or Cal diverges entirely, the system flags a minority report.</div>
+
+      <div style="margin-top:22px;">
+        <div class="f-label">Quantum Probability Amplitude</div>
+        <div class="f-math">P(Eᵢ) = |⟨φᵢ|ψ⟩|²</div>
+        <div class="f-note">|ψ⟩ is the composite neural state vector from all three decoded streams. |φᵢ⟩ is a learned basis vector for the i-th candidate event category. Each candidate future exists in superposition until the Consensus Engine collapses it into a definite probability ranking.</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="f-label">Symbol Key</div>
+      <div class="f-key-row"><span class="fks">P(E|A,B,C)</span><span class="fkd">Probability of event E given all three precog streams</span></div>
+      <div class="f-key-row"><span class="fks">P(A|E)</span><span class="fkd">Alice's likelihood of observing this event</span></div>
+      <div class="f-key-row"><span class="fks">P(B|E)</span><span class="fkd">Ben's likelihood — independent confirmatory weight</span></div>
+      <div class="f-key-row"><span class="fks">P(C|E)</span><span class="fkd">Cal's likelihood — independent confirmatory weight</span></div>
+      <div class="f-key-row"><span class="fks">|ψ⟩</span><span class="fkd">Composite neural state vector from all three subjects</span></div>
+      <div class="f-key-row"><span class="fks">|φᵢ⟩</span><span class="fkd">Learned basis vector for i-th candidate event category</span></div>
+
+      <div style="margin-top:18px;background:var(--lavender-pale);border:1px solid rgba(139,111,200,.14);border-radius:3px;padding:14px;">
+        <div style="font-size:13px;font-style:italic;color:var(--lavender);margin-bottom:5px;">Why Quantum-Inspired Processing</div>
+        <p style="font-size:12px;color:var(--body);line-height:1.65;">Classical Bayesian inference becomes intractable above ~40 dimensions. NeuroSect's latent space operates in hundreds to thousands of dimensions. Tensor network methods — Matrix Product States and MERA decompositions — achieve better scaling than naive variational methods for structured high-dimensional probability distributions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- SIGNAL INTEGRITY -->
+<section class="s-alt">
+<div class="inner">
+  <div class="ey ey-t">Signal Integrity</div>
+  <h2>The engineering constraints</h2>
+  <p class="lead">NeuroSect's signal integrity challenges are among the hardest in applied physics — extracting meaningful information from femtotesla-scale fields in a hospital EMI environment while sustaining 400 MB/s of raw data throughput across four asynchronous modalities.</p>
+
+  <div class="sig-grid">
+    <div class="sig-card">
+      <div class="sig-v">10⁻¹³</div>
+      <div class="sig-u">Tesla · Brain Magnetic Field</div>
+      <p>MEG detects at the femtotesla scale — requiring SQUID sensors and full magnetic shielding. The neuro-interface helmet's coupling fluid is specifically engineered to improve ultrasound propagation without adding competing magnetic signal.</p>
+    </div>
+    <div class="sig-card">
+      <div class="sig-v">~1 μV</div>
+      <div class="sig-u">EEG Signal Amplitude</div>
+      <p>EEG amplitudes at the microvolt scale overlaid with power line interference, muscle artifacts, eye movement artifacts, and electrode contact noise — requiring ICA artifact removal before any decoding begins.</p>
+    </div>
+    <div class="sig-card">
+      <div class="sig-v">4–6 sec</div>
+      <div class="sig-u">fMRI Haemodynamic Lag</div>
+      <p>The BOLD response peaks four to six seconds after a neural event. Without EEG and MEG temporal bridging, fast-moving predictive activity could slip between hemodynamic snapshots entirely.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- APPLICATIONS -->
+<section id="applications">
+<div class="inner">
+  <div class="ey">Why This Matters</div>
+  <h2>Real applications, beyond PreCrime</h2>
+  <p class="lead">The immediate future of NeuroSect is not law enforcement — it is medicine. The same multimodal pipeline that decodes three precogs could transform how neuroscience understands communication, disease, and the human brain.</p>
+
+  <div class="app-grid">
+    <div class="app-card al">
+      <h3>Communication for Non-Verbal Patients</h3>
+      <p>For patients with stroke, ALS, locked-in syndrome, or severe brain injury, NeuroSect could reconstruct the semantic and visual content of intended communication directly from brain activity — bypassing the motor pathway. Seeing a visual representation of what a patient is trying to express carries an immediacy that a synthesised sentence cannot replicate.</p>
+    </div>
+    <div class="app-card at">
+      <h3>Psychiatric and Neurological Research</h3>
+      <p>Psychiatry currently lacks lab values or neuroimaging to diagnose based on measurable metrics — relying on self-reporting limited by communication skill and willingness to disclose. NeuroSect could give scientists a direct representation of a patient's internal experience, enabling more objective diagnosis and treatment monitoring for schizophrenia, Alzheimer's, and mood disorders.</p>
+    </div>
+    <div class="app-card ap">
+      <h3>Law Enforcement and Investigation</h3>
+      <p>NeuroSect could reconstruct a witness's memory for crime scene analysis, retrieve faces and names a witness cannot verbally articulate, and capture peripheral sensory details — background sounds, environmental cues — that a witness may have overlooked but that could narrow search areas in missing-person cases.</p>
+    </div>
+    <div class="app-card ab">
+      <h3>Multigenerational Neurogenetic Research</h3>
+      <p>Scanning three generations of the same family simultaneously could reveal how neural signatures are inherited, modified, and expressed across lifetimes — tracking neurogenetic disorders live rather than reconstructing them from separate scans taken years apart. A day of NeuroSect imaging could replace years of sequential single-subject study.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<hr class="rule">
+
+<!-- FEASIBILITY -->
+<section class="s-sky">
+<div class="inner">
+  <div class="ey">Feasibility Assessment</div>
+  <h2>Could this actually work?</h2>
+
+  <div class="feas-grid">
+    <div class="fy">
+      <div class="feas-h fhy">What the Engineering Supports</div>
+      <div class="fi"><div class="fid fdy"></div>Multi-modal fusion measurably reduces noise — each modality provides information the others cannot capture alone</div>
+      <div class="fi"><div class="fid fdy"></div>Stable Diffusion already reconstructs visual scenes from fMRI BOLD signal with accuracy in semantic content, spatial layout, and depth (Takagi & Nishimoto, 2023)</div>
+      <div class="fi"><div class="fid fdy"></div>Individual neural signatures are stable enough to serve as fingerprints — enabling per-subject decoder training</div>
+      <div class="fi"><div class="fid fdy"></div>Non-invasive semantic decoding from fMRI demonstrated — UT Austin recovered continuous language from brain recordings without implants or speech</div>
+      <div class="fi"><div class="fid fdy"></div>Live full-brain neural imaging demonstrated in living biological tissue at high spatial accuracy (MIT Picower Institute; UCLA International Brain Laboratory)</div>
+    </div>
+    <div class="fn">
+      <div class="feas-h fhn">Where the Engineering Stops</div>
+      <div class="fi"><div class="fid fdn"></div>Temporal mismatch — real-time fusion across the EEG-to-fMRI gap remains an unsolved systems engineering problem</div>
+      <div class="fi"><div class="fid fdn"></div>Signal-to-noise — brain magnetic fields at 10⁻¹³ T require extreme shielding infrastructure not yet deployable in compact form</div>
+      <div class="fi"><div class="fid fdn"></div>Predictive state decoding requires training data for future-oriented neural activity — no such dataset currently exists</div>
+      <div class="fi"><div class="fid fdn"></div>The biological premise — genetically engineered quantum-thinking humans — is science fiction, not engineering</div>
+      <div class="fi"><div class="fid fdn"></div>Raising humans in controlled environments for continuous cognitive use is impermissible under any current ethical framework</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:5px;padding:22px 26px;">
+    <p style="font-size:14px;color:var(--body);line-height:1.8;font-style:italic;">The components of a precognitive imaging system are not waiting to be invented. They are waiting to be assembled. Every component has a research team working on it right now. NeuroSect is the architecture that brings them together.</p>
+  </div>
+</div>
+</section>
+
+<div class="cable" style="opacity:.35;"></div>
+
+<footer>
+  <div>
+    <div class="ft">Neurosect</div>
+    <p>A speculative multimodal medical imaging system inspired by Minority Report's precognitive computer</p>
+    <p style="margin-top:3px;">Amelia Arabe · Irene Ronda Gómez · Alan Aquino · ECE 187 · UC San Diego</p>
+  </div>
+  <div style="text-align:right;">
+    <p>Systems Architecture · Signal Processing Case Study</p>
+    <p style="margin-top:3px;color:var(--lavender);">github.com/ameliaarabe/neurosect</p>
+  </div>
+</footer>
+
+<script>
+mermaid.initialize({
+  startOnLoad:true, theme:'base',
+  themeVariables:{
+    primaryColor:'#f4f0fb', primaryTextColor:'#2a2040',
+    primaryBorderColor:'#8b6fc8', lineColor:'#8b6fc8',
+    secondaryColor:'#eefbfa', tertiaryColor:'#fdf0f4',
+    background:'#ffffff', mainBkg:'#f4f0fb',
+    actorBkg:'#f4f0fb', actorBorder:'#d0c8e8',
+    actorTextColor:'#2a2040', actorLineColor:'#e8e2f4',
+    signalColor:'#8b6fc8', signalTextColor:'#2a2040',
+    labelBoxBkgColor:'#ffffff', labelBoxBorderColor:'#d0c8e8',
+    labelTextColor:'#42405a', loopTextColor:'#42405a',
+    noteBorderColor:'#00b8b0', noteBkgColor:'#eefbfa',
+    noteTextColor:'#2a2040', fontSize:'12px'
+  }
+});
+</script>
+</body>
+</html>
